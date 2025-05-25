@@ -122,7 +122,9 @@ public class DataManager {
 		DailyRewardsPlugin.get().runAsync(() -> {
 			initiatePlayer(player);
 			final Map<String, Object> result = getPlayerData(player);
-			Bukkit.getScheduler().runTask(DailyRewardsPlugin.get(), () -> callback.onQueryDone(result));
+			if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+				DailyRewardsPlugin.getFoliaLib().getScheduler().runNextTick(wrappedTask -> callback.onQueryDone(result));
+			} else Bukkit.getScheduler().runTask(DailyRewardsPlugin.get(), () -> callback.onQueryDone(result));
 		});
 	}
 

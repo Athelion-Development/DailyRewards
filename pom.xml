@@ -59,6 +59,11 @@
                             <pattern>com.cryptomorin.xseries</pattern>
                             <shadedPattern>eu.athelion.dailyrewards.shaded.xseries</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.tcoded.folialib</pattern>
+                            <!-- !! MAKE SURE TO CHANGE THIS TO YOUR PLUGIN'S GROUP & PLUGIN NAME !! -->
+                            <shadedPattern>eu.athelion.dailyrewards.lib.folialib</shadedPattern>
+                        </relocation>
                     </relocations>
                     <filters>
                         <filter>
@@ -213,6 +218,12 @@
             <artifactId>authme</artifactId>
             <version>5.6.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.technicallycoded</groupId>
+            <artifactId>FoliaLib</artifactId>
+            <version>main-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

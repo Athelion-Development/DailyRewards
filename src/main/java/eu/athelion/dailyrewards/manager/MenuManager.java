@@ -40,7 +40,7 @@ public class MenuManager implements Listener {
     }
 
     public void openRewardsMenu(final Player player) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(DailyRewardsPlugin.get(), () -> {
+        Runnable runnable = () -> {
             final int timer = 20;
             final Inventory inventory = Bukkit.createInventory(
                     MAIN_MENU_HOLDER,
@@ -61,13 +61,7 @@ public class MenuManager implements Listener {
                 Cooldown cooldown = user.getCooldown(reward.getType());
                 for (int slot : reward.getPosition()) {
 
-                    final AtomicReference<BukkitTask> task = new AtomicReference<>();
-                    task.set(Bukkit.getScheduler().runTaskTimer(DailyRewardsPlugin.get(), () -> {
-                        if (!player.getOpenInventory().getTitle().equalsIgnoreCase(Lang.MENU_TITLE.asColoredString(player))) {
-                            task.get().cancel();
-                            return;
-                        }
-
+                    Runnable updateItem = () -> {
                         boolean premiumVariant = PermissionUtil.hasPremium(player, reward.getType());
                         boolean claimable = cooldown.isClaimable();
                         inventory.setItem(slot,
@@ -91,14 +85,35 @@ public class MenuManager implements Listener {
                                         )
                                         .build()
                         );
+                    };
 
-                    }, 0, timer));
+                    if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+                        DailyRewardsPlugin.getFoliaLib().getScheduler().runAtEntityTimer(player, updateTask -> {
+                            if (!player.getOpenInventory().getTitle().equalsIgnoreCase(Lang.MENU_TITLE.asColoredString(player))) {
+                                updateTask.cancel();
+                                return;
+                            }
+                            updateItem.run();
+                        }, 0, timer);
+                    } else {
+                        final AtomicReference<BukkitTask> task = new AtomicReference<>();
+                        task.set(Bukkit.getScheduler().runTaskTimer(DailyRewardsPlugin.get(), () -> {
+                            if (!player.getOpenInventory().getTitle().equalsIgnoreCase(Lang.MENU_TITLE.asColoredString(player))) {
+                                task.get().cancel();
+                                return;
+                            }
+                            updateItem.run();
+                        }, 0, timer));
+                    }
                 }
             }
-
             player.openInventory(inventory);
-        });
+        };
+        if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+            DailyRewardsPlugin.getFoliaLib().getScheduler().runLater(runnable, 0);
+        } else Bukkit.getScheduler().scheduleSyncDelayedTask(DailyRewardsPlugin.get(), runnable);
     }
+
 
     public void openSettings(final Player player) {
         if (!PermissionUtil.hasPermission(player, PermissionUtil.Permission.SETTINGS_MENU)) {
