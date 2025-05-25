@@ -18,20 +18,21 @@ public class UpdateChecker {
 
 	public void getVersion(final Consumer<String> consumer) {
 		final String link = String.format("https://api.spigotmc.org/legacy/update.php?resource=%d", this.RESOURCE_ID);
-		Bukkit.getScheduler().runTaskAsynchronously(
-				DailyRewardsPlugin.get(),
-				() -> {
-					try (final InputStream inputStream = new URL(link).openStream();
-						 final Scanner scanner = new Scanner(inputStream)) {
+		Runnable runnable = () -> {
+			try (final InputStream inputStream = new URL(link).openStream();
+				 final Scanner scanner = new Scanner(inputStream)) {
 
-						if (!scanner.hasNext()) return;
-						consumer.accept(scanner.next());
+				if (!scanner.hasNext()) return;
+				consumer.accept(scanner.next());
 
-					} catch (IOException exception) {
-						DailyRewardsPlugin.get()
-								.getLogger()
-								.info(String.format("Can't look for updates: %s", exception.getMessage()));
-					}
-				});
+			} catch (IOException exception) {
+				DailyRewardsPlugin.get()
+						.getLogger()
+						.info(String.format("Can't look for updates: %s", exception.getMessage()));
+			}
+		};
+		if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+			DailyRewardsPlugin.getFoliaLib().getScheduler().runAsync(wrappedTask ->  runnable.run());
+		} else Bukkit.getScheduler().runTaskAsynchronously(DailyRewardsPlugin.get(), runnable);
 	}
 }

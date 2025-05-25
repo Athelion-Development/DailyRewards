@@ -1,5 +1,7 @@
 package eu.athelion.dailyrewards;
 
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import eu.athelion.dailyrewards.commandmanager.command.RewardMainCommand;
 import eu.athelion.dailyrewards.commandmanager.command.RewardsMainCommand;
 import eu.athelion.dailyrewards.data.DataManager;
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class DailyRewardsPlugin extends JavaPlugin {
@@ -36,6 +39,7 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     private static DailyRewardsPlugin plugin;
     private static ExecutorService executorService;
     private static String latestVersion;
+    private static FoliaLib foliaLib;
 
     private static ConsoleCommandSender console;
 
@@ -47,11 +51,13 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     public static DailyRewardsPlugin get() {
         return DailyRewardsPlugin.plugin;
     }
+    public static FoliaLib getFoliaLib() { return foliaLib; }
 
     @Override
     public void onEnable() {
         setPlugin(this);
         executorService = Executors.newSingleThreadExecutor();
+        foliaLib = new FoliaLib(this);
 
         setConsole(get().getServer().getConsoleSender());
         setPluginManager(getServer().getPluginManager());
@@ -167,12 +173,16 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     }
 
     public void runDelayed(Runnable runnable, long delay) {
-        getScheduler().runTaskLater(this, runnable, delay);
+        if (getFoliaLib().isFolia()) {
+            getFoliaLib().getScheduler().runLater(runnable, delay);
+        } else getScheduler().runTaskLater(this, runnable, delay);
     }
 
     @SuppressWarnings("unused")
     public void runSync(Runnable runnable) {
-        getScheduler().runTask(this, runnable);
+        if (getFoliaLib().isFolia()) {
+            getFoliaLib().getScheduler().runNextTick(task -> runnable.run());
+        } else getScheduler().runTask(this, runnable);
     }
 
     public void runAsync(Runnable runnable) {
