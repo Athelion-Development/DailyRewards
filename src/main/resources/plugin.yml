@@ -4,6 +4,7 @@ version: ${project.version}
 authors: [Revivalo, ChimpGamer]
 description: Reward system for players
 website: https://discord.athelion.eu/
+folia-supported: true
 
 main: eu.athelion.dailyrewards.DailyRewardsPlugin
 api-version: 1.13

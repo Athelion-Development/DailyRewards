@@ -27,12 +27,22 @@ public final class UserHandler implements Listener {
 
     public UserHandler() {
         this.joinNotificationTask = new JoinNotificationTask(usersHashMap);
-        this.joinNotificationTask.get()
-                .runTaskTimerAsynchronously(DailyRewardsPlugin.get(), 45, 45);
+        if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+            DailyRewardsPlugin.getFoliaLib().getScheduler()
+                    .runTimerAsync(wrappedTask -> this.joinNotificationTask.get().run(), 45, 45);
+        } else {
+            this.joinNotificationTask.get()
+                    .runTaskTimerAsynchronously(DailyRewardsPlugin.get(), 45, 45);
+        }
 
         this.autoClaimTask = new AutoClaimTask(usersHashMap);
-        this.autoClaimTask.get()
-                .runTaskTimerAsynchronously(DailyRewardsPlugin.get(), 45, 45);
+        if (DailyRewardsPlugin.getFoliaLib().isFolia()) {
+            DailyRewardsPlugin.getFoliaLib().getScheduler()
+                    .runTimerAsync(wrappedTask -> this.autoClaimTask.get().run(), 45, 45);
+        } else {
+            this.autoClaimTask.get()
+                    .runTaskTimerAsynchronously(DailyRewardsPlugin.get(), 45, 45);
+        }
 
         DailyRewardsPlugin.get().registerListeners(this);
     }
@@ -60,7 +70,6 @@ public final class UserHandler implements Listener {
         final Player player = event.getPlayer();
 
         DataManager.loadPlayerDataAsync(player, data -> {
-
             User user = UserHandler.addUser(
                     new User(
                             player,
