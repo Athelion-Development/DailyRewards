@@ -47,7 +47,9 @@ public class ActionsExecutor {
 
             switch (action.getActionType()) {
                 case CONSOLE:
-                    DailyRewardsPlugin.get().executeCommandAsConsole(lineWithPlaceholders);
+                    DailyRewardsPlugin.get().runSync(() ->
+                            DailyRewardsPlugin.get().executeCommandAsConsole(lineWithPlaceholders)
+                    );
                     break;
                 case PLAYER:
                     player.performCommand("/" + lineWithPlaceholders);
