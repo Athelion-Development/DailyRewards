@@ -13,3 +13,6 @@ https://www.spigotmc.org/resources/%E2%9A%A1-daily-weekly-monthly-rewards-mysql-
 
 If you have any feedback or questions, please reach out to us at https://discord.com/invite/TfUC8uJ
 
+## Edit
+
+This version of plugin has ability to setup own gui for settings.
