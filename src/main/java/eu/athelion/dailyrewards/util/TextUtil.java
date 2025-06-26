@@ -62,7 +62,7 @@ public class TextUtil {
         Matcher g = gradient.matcher(text);
         Matcher l = legacyGradient.matcher(text);
         Matcher r = rgb.matcher(text);
-        Matcher s = singleHexColor.matcher(text); // Matcher pro nový vzor
+        Matcher s = singleHexColor.matcher(text);
 
         while (g.find()) {
             Color start = Color.decode(g.group(1));
