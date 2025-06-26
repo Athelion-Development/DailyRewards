@@ -17,8 +17,6 @@ public class Reward {
     private final Config cooldownFormat;
     private final Config position;
     private final Config sound;
-    private final Lang title;
-    private final Lang subtitle;
     private final Lang collectedMessage;
     private final Lang collectedPremiumMessage;
     private final Config availableItem;
@@ -41,8 +39,6 @@ public class Reward {
                   Config cooldownFormat,
                   Config position,
                   Config sound,
-                  Lang title,
-                  Lang subtitle,
                   Lang collectedMessage,
                   Lang collectedPremiumMessage,
                   Config availableItem,
@@ -64,8 +60,6 @@ public class Reward {
         this.cooldownFormat = cooldownFormat;
         this.position = position;
         this.sound = sound;
-        this.title = title;
-        this.subtitle = subtitle;
         this.collectedMessage = collectedMessage;
         this.collectedPremiumMessage = collectedPremiumMessage;
         this.availableItem = availableItem;
@@ -112,14 +106,6 @@ public class Reward {
 
     public String getSound() {
         return sound.asString();
-    }
-
-    public String getTitle() {
-        return title.asColoredString();
-    }
-
-    public String getSubtitle() {
-        return subtitle.asColoredString();
     }
 
     public String getCollectedMessage(Player player) {

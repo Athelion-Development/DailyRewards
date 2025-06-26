@@ -115,8 +115,6 @@ public class ClaimAction implements RewardAction<RewardType> {
             if (announce) {
                 PlayerUtil.playSound(player, reward.getSound());
 
-                player.sendTitle(reward.getTitle(), reward.getSubtitle());
-
                 if (Config.ANNOUNCE_ENABLED.asBoolean()) {
                     Bukkit.broadcastMessage((PermissionUtil.hasPremium(player, type) ? reward.getCollectedPremiumMessage(player) : reward.getCollectedMessage(player)).replace("%player%", player.getName()));
                 }
