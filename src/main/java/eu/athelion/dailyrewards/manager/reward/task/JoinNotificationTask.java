@@ -29,6 +29,10 @@ public class JoinNotificationTask implements Task {
     }
 
     public void addUser(User user) {
+        if (user.getAvailableRewards().isEmpty()) {
+            return;
+        }
+
         if (user.hasSettingEnabled(Setting.AUTO_CLAIM)) {
             return;
         }

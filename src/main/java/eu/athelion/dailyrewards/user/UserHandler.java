@@ -78,9 +78,6 @@ public final class UserHandler implements Listener {
             );
 
             final Set<RewardType> availableRewards = user.getAvailableRewards();
-            if (availableRewards.isEmpty()) {
-                return;
-            }
 
             ReminderReceiveEvent reminderReceiveEvent = new ReminderReceiveEvent(player, availableRewards);
             DailyRewardsPlugin.get().runSync(() -> Bukkit.getPluginManager().callEvent(reminderReceiveEvent));
