@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.util.PlayerUtil;
 import eu.athelion.dailyrewards.util.TextUtil;
+import eu.athelion.dailyrewards.util.builder.CustomFireworkBuilder;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
@@ -69,12 +70,11 @@ public class ActionsExecutor {
                 case SOUND:
                     PlayerUtil.playSound(player, line.toUpperCase(Locale.ENGLISH));
                     break;
-//                case FIREWORK:
-//                    CustomFireworkBuilder
-//                            .fromString(line)
-//                            .launch(player.getLocation());
-//                    //PlayerUtils.spawnFirework(player.getLocation());
-//                    break;
+                case FIREWORK:
+                    CustomFireworkBuilder
+                            .fromString(line)
+                            .launch(player.getLocation());
+                    break;
             }
         });
 
