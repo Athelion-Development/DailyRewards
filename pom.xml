@@ -6,7 +6,7 @@
 
     <groupId>eu.athelion</groupId>
     <artifactId>DailyReward</artifactId>
-    <version>2.9.1</version>
+    <version>2.10.1</version>
     <packaging>jar</packaging>
 
     <name>DailyReward</name>
@@ -61,7 +61,7 @@
                         </relocation>
                         <relocation>
                             <pattern>com.tcoded.folialib</pattern>
-                            <shadedPattern>eu.athelion.dailyrewards.lib.folialib</shadedPattern>
+                            <shadedPattern>eu.athelion.dailyrewards.shaded.folialib</shadedPattern>
                         </relocation>
                     </relocations>
                     <filters>
