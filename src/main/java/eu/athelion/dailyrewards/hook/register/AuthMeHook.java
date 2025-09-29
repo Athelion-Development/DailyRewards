@@ -39,10 +39,11 @@ public class AuthMeHook implements Hook<Void> {
     private static class AuthMeLoginListener extends LoginListener<LoginEvent> {
         @Override
         @EventHandler
-        public void onLogin(LoginEvent event) {
-            final User user = UserHandler.getUser(event.getPlayer());
-            DailyRewardsPlugin.getUserHandler().getAutoClaimTask().addUser(user);
-            DailyRewardsPlugin.getUserHandler().getJoinNotificationTask().addUser(user);
+        public void onLogin(final LoginEvent event) {
+            UserHandler.runWhenReady(event.getPlayer(), (user) -> {
+                DailyRewardsPlugin.getUserHandler().getAutoClaimTask().addUser(user);
+                DailyRewardsPlugin.getUserHandler().getJoinNotificationTask().addUser(user);
+            });
         }
     }
 }

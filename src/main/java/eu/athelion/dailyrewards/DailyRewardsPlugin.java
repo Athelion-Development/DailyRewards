@@ -1,7 +1,6 @@
 package eu.athelion.dailyrewards;
 
 import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.wrapper.task.WrappedTask;
 import eu.athelion.dailyrewards.commandmanager.command.RewardMainCommand;
 import eu.athelion.dailyrewards.commandmanager.command.RewardsMainCommand;
 import eu.athelion.dailyrewards.data.DataManager;
@@ -30,7 +29,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class DailyRewardsPlugin extends JavaPlugin {

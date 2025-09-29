@@ -18,9 +18,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public final class UserHandler implements Listener {
     private static final Map<UUID, User> usersHashMap = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<Consumer<User>>> pendingTasks = new ConcurrentHashMap<>();
 
     private final JoinNotificationTask joinNotificationTask;
     private final AutoClaimTask autoClaimTask;
@@ -49,6 +51,20 @@ public final class UserHandler implements Listener {
 
     public static User addUser(final User user) {
         usersHashMap.put(user.getPlayer().getUniqueId(), user);
+
+        // Spusť čekající úkoly
+        List<Consumer<User>> tasks = pendingTasks.remove(user.getPlayer().getUniqueId());
+        if (tasks != null) {
+            for (Consumer<User> task : tasks) {
+                try {
+                    task.accept(user);
+                } catch (Exception ex) {
+                    Bukkit.getLogger().warning("Failed to run pending User task: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        }
+
         return user;
     }
 
@@ -63,6 +79,17 @@ public final class UserHandler implements Listener {
 
     public static User removeUser(final UUID uuid) {
         return usersHashMap.remove(uuid);
+    }
+
+    public static void runWhenReady(Player player, Consumer<User> action) {
+        UUID uuid = player.getUniqueId();
+        User user = usersHashMap.get(uuid);
+
+        if (user != null) {
+            action.accept(user);
+        } else {
+            pendingTasks.computeIfAbsent(uuid, k -> new ArrayList<>()).add(action);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
