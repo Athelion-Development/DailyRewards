@@ -240,7 +240,7 @@ public class MenuManager implements Listener {
 
             DailyRewardsPlugin.getMenuManager().openSettings(user.getPlayer());
         } else if (slot == Config.SETTINGS_POSITION.asInt()) {
-            DailyRewardsPlugin.getMenuManager().openRewardsMenu(user.getPlayer());
+            DailyRewardsPlugin.getMenuManager().openRewardsMenu(user.getPlayer(), false);
         }
     }
 
