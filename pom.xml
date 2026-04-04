@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>DailyReward</name>
-    <description>Reward system</description>
+    <description>Lightweight reward system</description>
     <url>https://discord.athelion.eu/</url>
 
     <properties>
