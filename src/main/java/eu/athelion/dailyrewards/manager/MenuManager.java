@@ -11,6 +11,7 @@ import eu.athelion.dailyrewards.user.User;
 import eu.athelion.dailyrewards.user.UserHandler;
 import eu.athelion.dailyrewards.util.ItemBuilder;
 import eu.athelion.dailyrewards.util.PermissionUtil;
+import eu.athelion.dailyrewards.util.PlayerUtil;
 import eu.athelion.dailyrewards.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -39,7 +40,8 @@ public class MenuManager implements Listener {
         loadBackgroundFiller();
     }
 
-    public void openRewardsMenu(final Player player) {
+    public void openRewardsMenu(final Player player, boolean playSound) {
+        if (playSound) PlayerUtil.playSound(player, Config.MENU_OPENING_SOUND.asString());
         Runnable runnable = () -> {
             final int timer = 20;
             final Inventory inventory = Bukkit.createInventory(

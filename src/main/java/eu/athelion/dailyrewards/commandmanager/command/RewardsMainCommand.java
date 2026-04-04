@@ -33,6 +33,6 @@ public class RewardsMainCommand extends MainCommand {
             return;
         }
 
-        DailyRewardsPlugin.getMenuManager().openRewardsMenu((Player) sender);
+        DailyRewardsPlugin.getMenuManager().openRewardsMenu((Player) sender, true);
     }
 }

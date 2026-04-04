@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public enum Config {
     LANGUAGE,
     MENU_SIZE,
+    MENU_OPENING_SOUND,
     SETTINGS_MENU_SIZE,
     FILL_BACKGROUND_ENABLED,
     BACKGROUND_ITEM,

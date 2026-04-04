@@ -23,10 +23,10 @@ public class PlayerUtil {
         try {
             sound = sound.toUpperCase(Locale.ENGLISH);
             soundToPlay = Sound.valueOf(sound);
-        } catch (IllegalArgumentException | NullPointerException ex){
-            soundToPlay = VersionUtil.isOldVersion() ? Sound.valueOf("NOTE_PLING") : VersionUtil.isLegacyVersion() ? Sound.valueOf("BLOCK_NOTE_PLING") : Sound.valueOf("BLOCK_NOTE_BLOCK_HARP");
+            player.playSound(player.getLocation(), soundToPlay, 1f, 1f);
+        } catch (IllegalArgumentException | NullPointerException ignored){
+            //
         }
-        player.playSound(player.getLocation(), soundToPlay, 1f, 1f);
     }
 
     public static CompletableFuture<OfflinePlayer> getOfflinePlayer(final UUID uuid) {

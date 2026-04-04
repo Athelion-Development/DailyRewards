@@ -27,7 +27,7 @@ public interface RewardAction<T> {
         ActionResponse response = execute(player, extra);
 
         if (menuShouldOpen() && Config.OPEN_MENU_AFTER_CLAIMING.asBoolean()) {
-            DailyRewardsPlugin.getMenuManager().openRewardsMenu(player.getPlayer());
+            DailyRewardsPlugin.getMenuManager().openRewardsMenu(player.getPlayer(), false);
         }
 
         return response;

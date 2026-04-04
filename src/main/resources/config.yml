@@ -62,6 +62,8 @@ config:
   help-footer: "&2&m------------------------------------------------"
 
   menu-size: 45
+  # Set none to disable sound
+  menu-opening-sound: BLOCK_CHEST_OPEN
   fill-background-enabled: true
   background-item: GRAY_STAINED_GLASS_PANE
   open-menu-after-claiming: true
