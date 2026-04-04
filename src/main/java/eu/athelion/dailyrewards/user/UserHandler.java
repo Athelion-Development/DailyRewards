@@ -52,7 +52,6 @@ public final class UserHandler implements Listener {
     public static User addUser(final User user) {
         usersHashMap.put(user.getPlayer().getUniqueId(), user);
 
-        // Spusť čekající úkoly
         List<Consumer<User>> tasks = pendingTasks.remove(user.getPlayer().getUniqueId());
         if (tasks != null) {
             for (Consumer<User> task : tasks) {
