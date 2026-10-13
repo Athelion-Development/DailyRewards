@@ -20,7 +20,9 @@ public class ActionsExecutor {
     public static void executeActions(Player player, String rewardIdentifier, List<RewardAction> actions) {
         final Set<String> words = new HashSet<>();
 
-        String[] titleText = new String[]{" ", " "};
+        // Left null until an action actually sets them, so rewards without a
+        // title/subtitle do not blank out whatever is on screen.
+        final String[] titleText = new String[2];
 
 
         actions.forEach(action -> {
@@ -53,7 +55,11 @@ public class ActionsExecutor {
                     );
                     break;
                 case PLAYER:
-                    player.performCommand("/" + lineWithPlaceholders);
+                    // performCommand expects the command without a leading slash,
+                    // but configs are commonly written with one.
+                    player.performCommand(lineWithPlaceholders.startsWith("/")
+                            ? lineWithPlaceholders.substring(1)
+                            : lineWithPlaceholders);
                     break;
                 case MESSAGE:
                     TextUtil.sendListToPlayer(player, Splitter.on("|").splitToList(coloredLine));
@@ -79,6 +85,11 @@ public class ActionsExecutor {
         });
 
 
-        player.sendTitle(titleText[0], titleText[1]);
+        if (titleText[0] != null || titleText[1] != null) {
+            player.sendTitle(
+                    titleText[0] == null ? " " : titleText[0],
+                    titleText[1] == null ? " " : titleText[1]
+            );
+        }
     }
 }

@@ -28,7 +28,7 @@ public class AutoClaimTask implements Task{
             return;
         }
 
-        long checkTime = System.currentTimeMillis() + (Config.JOIN_NOTIFICATION_DELAY.asInt() * 1000L);
+        long checkTime = System.currentTimeMillis() + (Config.JOIN_AUTO_CLAIM_DELAY.asInt() * 1000L);
 
         playerRewardCheckTimes.put(user, checkTime);
     }
@@ -45,11 +45,16 @@ public class AutoClaimTask implements Task{
 
                     long checkTime = playerRewardCheckTimes.get(user);
                     if (currentTime >= checkTime) {
-                        DailyRewardsPlugin.get().runSync(() -> DailyRewardsPlugin.getRewardManager().processAutoClaimForUser(user));
                         playerRewardCheckTimes.remove(user);
+                        DailyRewardsPlugin.get().runAtEntity(user.getPlayer(),
+                                () -> DailyRewardsPlugin.getRewardManager().processAutoClaimForUser(user));
                     }
                 }
             }
         };
+    }
+
+    public Map<User, Long> getPlayerRewardCheckTimes() {
+        return playerRewardCheckTimes;
     }
 }

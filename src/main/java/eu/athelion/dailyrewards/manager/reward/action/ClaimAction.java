@@ -96,6 +96,9 @@ public class ClaimAction implements RewardAction<RewardType> {
 
         Cooldown cooldown = user.getCooldown(reward.getType());
         if (cooldown.isClaimable()) {
+            // Claim the reward before running any action, so a second click that
+            // lands while the actions are still executing is rejected.
+            CooldownManager.setCooldown(user, reward);
 
             if (rewardActions.isEmpty()) {
                 player.sendMessage(Lang.REWARDS_ARE_NOT_SET.asColoredString(player));
@@ -109,8 +112,6 @@ public class ClaimAction implements RewardAction<RewardType> {
                         TextUtil.findAndReturnActions(rewardActions)
                 );
             }
-
-            DailyRewardsPlugin.get().runAsync((() -> CooldownManager.setCooldown(user, reward)));
 
             if (announce) {
                 PlayerUtil.playSound(player, reward.getSound());

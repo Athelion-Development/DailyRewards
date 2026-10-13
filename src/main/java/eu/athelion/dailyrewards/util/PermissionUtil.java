@@ -42,6 +42,7 @@ public class PermissionUtil {
         REQUIRED_FREE_SLOTS_BYPASS("dailyreward.requiredFreeSlots.bypass"),
         DISABLED_WORLDS_BYPASS("dailyreward.disabledWorlds.bypass"),
         RESET_FOR_OTHERS("dailyreward.manage"),
+        CLAIM_FOR_OTHERS("dailyreward.claim.others"),
         HELP("dailyreward.help");
 
         private final String permission;

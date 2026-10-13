@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
@@ -189,10 +190,17 @@ public class MenuManager implements Listener {
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof MenuManager.RewardsInventoryHolder)) return;
-        if (event.getCurrentItem() == null) return;
+
+        // Cancel before anything else, otherwise clicks on empty slots (and shift
+        // clicks from the player inventory) can move items into the menu.
         event.setCancelled(true);
+
+        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+        if (event.getCurrentItem() == null) return;
+
         final Player player = (Player) event.getWhoClicked();
-        int slot = event.getSlot();
+        // Raw slots, otherwise the player inventory shares the numbering of the menu.
+        int slot = event.getRawSlot();
         if (Config.DAILY_POSITIONS.asIntegerList().contains(slot)) {
             new ClaimAction(player).preCheck(player, RewardType.DAILY);
         } else if (Config.WEEKLY_POSITIONS.asIntegerList().contains(slot)) {
@@ -210,16 +218,24 @@ public class MenuManager implements Listener {
             return;
         }
 
+        event.setCancelled(true);
+
+        if (event.getClickedInventory() != event.getView().getTopInventory()) {
+            return;
+        }
+
         if (event.getCurrentItem() == null) {
             return;
         }
 
-        event.setCancelled(true);
-
         final User user = UserHandler.getUser(event.getWhoClicked().getUniqueId());
+        if (user == null) {
+            return;
+        }
+
         final Player player = user.getPlayer();
 
-        int slot = event.getSlot();
+        int slot = event.getRawSlot();
         if (slot == Config.JOIN_NOTIFICATION_POSITION.asInt()) {
             if (!PermissionUtil.hasPermission(player, PermissionUtil.Permission.JOIN_NOTIFICATION_SETTING)) {
                 player.sendMessage(Lang.INSUFFICIENT_PERMISSION.asColoredString(player)
@@ -241,6 +257,20 @@ public class MenuManager implements Listener {
             DailyRewardsPlugin.getMenuManager().openSettings(user.getPlayer());
         } else if (slot == Config.SETTINGS_POSITION.asInt()) {
             DailyRewardsPlugin.getMenuManager().openRewardsMenu(user.getPlayer(), false);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryDrag(final InventoryDragEvent event) {
+        final InventoryHolder holder = event.getInventory().getHolder();
+        if (!(holder instanceof MenuManager.RewardsInventoryHolder)
+                && !(holder instanceof MenuManager.RewardSettingsInventoryHolder)) {
+            return;
+        }
+
+        final int menuSize = event.getView().getTopInventory().getSize();
+        if (event.getRawSlots().stream().anyMatch(rawSlot -> rawSlot < menuSize)) {
+            event.setCancelled(true);
         }
     }
 

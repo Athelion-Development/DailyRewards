@@ -35,8 +35,13 @@ public class PlayerData extends YamlConfiguration {
 		}
 	}
 
+	/**
+	 * Player data files, or an empty list when nothing has been saved yet.
+	 * listFiles returns null for a missing folder, which used to blow up the import.
+	 */
 	public static List<File> getFiles() {
-		return Arrays.asList(userDataFolder.listFiles());
+		final File[] files = userDataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+		return files == null ? Collections.emptyList() : Arrays.asList(files);
 	}
 
 	public static void removeConfigs() {

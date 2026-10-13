@@ -11,6 +11,7 @@ import eu.athelion.dailyrewards.manager.MenuManager;
 import eu.athelion.dailyrewards.manager.backend.MySQLManager;
 import eu.athelion.dailyrewards.manager.reward.RewardManager;
 import eu.athelion.dailyrewards.updatechecker.UpdateChecker;
+import eu.athelion.dailyrewards.updatechecker.UpdateNotificator;
 import eu.athelion.dailyrewards.user.User;
 import eu.athelion.dailyrewards.user.UserHandler;
 import eu.athelion.dailyrewards.util.VersionUtil;
@@ -18,6 +19,7 @@ import io.github.g00fy2.versioncompare.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -79,6 +81,8 @@ public final class DailyRewardsPlugin extends JavaPlugin {
         Config.reload();
 
         if (Config.UPDATE_CHECKER.asBoolean()) {
+            new UpdateNotificator();
+
             new UpdateChecker(RESOURCE_ID).getVersion(pluginVersion -> {
                 setLatestVersion(pluginVersion);
 
@@ -181,6 +185,23 @@ public final class DailyRewardsPlugin extends JavaPlugin {
         if (getFoliaLib().isFolia()) {
             getFoliaLib().getScheduler().runNextTick(task -> runnable.run());
         } else getScheduler().runTask(this, runnable);
+    }
+
+    /**
+     * Runs the task on the thread owning the entity. Anything touching a player
+     * (sounds, titles, inventories) has to go through here instead of runSync,
+     * otherwise it ends up on the wrong region thread on Folia.
+     */
+    public void runAtEntity(Entity entity, Runnable runnable) {
+        if (getFoliaLib().isFolia()) {
+            getFoliaLib().getScheduler().runAtEntity(entity, task -> runnable.run());
+        } else getScheduler().runTask(this, runnable);
+    }
+
+    public void runAtEntityLater(Entity entity, Runnable runnable, long delay) {
+        if (getFoliaLib().isFolia()) {
+            getFoliaLib().getScheduler().runAtEntityLater(entity, runnable, delay);
+        } else getScheduler().runTaskLater(this, runnable, delay);
     }
 
     public void runAsync(Runnable runnable) {

@@ -1,5 +1,6 @@
 package eu.athelion.dailyrewards.commandmanager.subcommand;
 
+import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.commandmanager.SubCommand;
 import eu.athelion.dailyrewards.data.DataManager;
 import eu.athelion.dailyrewards.configuration.file.Lang;
@@ -36,6 +37,8 @@ public class ImportCommand implements SubCommand {
 
     @Override
     public void perform(CommandSender sender, String[] args) {
-        DataManager.importToDatabase(sender);
+        // The import waits on a latch and writes to the database, neither of which
+        // is allowed on the main thread.
+        DailyRewardsPlugin.get().runAsync(() -> DataManager.importToDatabase(sender));
     }
 }

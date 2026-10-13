@@ -6,6 +6,7 @@ import eu.athelion.dailyrewards.configuration.file.Lang;
 import eu.athelion.dailyrewards.manager.reward.Reward;
 import eu.athelion.dailyrewards.manager.reward.RewardType;
 import eu.athelion.dailyrewards.manager.reward.action.ClaimAction;
+import eu.athelion.dailyrewards.util.PermissionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -39,7 +40,9 @@ public class ClaimCommand implements SubCommand {
     @Override
     public List<String> getTabCompletion(CommandSender sender, int index, String[] args) {
         if (args.length == 1)       return DailyRewardsPlugin.getRewardManager().getRewards().stream().map(Reward::getName).collect(Collectors.toList());
-        else if (args.length == 2)  return DailyRewardsPlugin.get().getServer().getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+        else if (args.length == 2)  return PermissionUtil.hasPermission(sender, PermissionUtil.Permission.CLAIM_FOR_OTHERS)
+                ? DailyRewardsPlugin.get().getServer().getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList())
+                : Collections.emptyList();
         else                        return Collections.emptyList();
     }
 
@@ -61,6 +64,11 @@ public class ClaimCommand implements SubCommand {
             }
             claimingPlayer = (Player) sender;
         } else if (args.length == 2) {
+            if (!PermissionUtil.hasPermission(sender, PermissionUtil.Permission.CLAIM_FOR_OTHERS)) {
+                sender.sendMessage(Lang.INSUFFICIENT_PERMISSION.asColoredString()
+                        .replace("%permission%", PermissionUtil.Permission.CLAIM_FOR_OTHERS.get()));
+                return;
+            }
             claimingPlayer = Bukkit.getPlayerExact(args[1]);
         } else {
             sender.sendMessage(Lang.COMMAND_USAGE.asColoredString().replace("%usage%", getSyntax()));

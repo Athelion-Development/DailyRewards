@@ -12,7 +12,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -52,26 +54,37 @@ public class DataManager {
 
 		sender.sendMessage(TextUtil.colorize("&aStarting import from files..."));
 
-		CountDownLatch latch = new CountDownLatch(PlayerData.getFiles().size());
+		final List<File> files = PlayerData.getFiles();
+		final CountDownLatch latch = new CountDownLatch(files.size());
 
-		PlayerData.getFiles().parallelStream().forEach(file -> {
-			String fileName = file.getName();
-			String uuidString = fileName.substring(0, fileName.length() - 4);
-			UUID uuid = UUID.fromString(uuidString);
-			MySQLManager.createPlayer(uuidString);
+		files.parallelStream().forEach(file -> {
+			try {
+				String fileName = file.getName();
+				String uuidString = fileName.substring(0, fileName.length() - 4);
+				UUID uuid = UUID.fromString(uuidString);
+				MySQLManager.createPlayer(uuidString);
 
-			ConfigurationSection data = PlayerData.getConfig(uuid).getConfigurationSection("rewards");
+				ConfigurationSection data = PlayerData.getConfig(uuid).getConfigurationSection("rewards");
+				if (data == null) {
+					DailyRewardsPlugin.get().getLogger().warning("Skipping " + fileName + ", it has no rewards section.");
+					return;
+				}
 
-			MySQLManager.updatePlayer(UUID.fromString(uuidString), data.getValues(false));
-
-			latch.countDown();
+				MySQLManager.updatePlayer(uuid, data.getValues(false));
+			} catch (IllegalArgumentException ex) {
+				DailyRewardsPlugin.get().getLogger().warning("Skipping " + file.getName() + ", it is not named after a player UUID.");
+			} finally {
+				// Always count down, otherwise a single bad file leaves the import hanging.
+				latch.countDown();
+			}
 		});
 
 		try {
 			latch.await();
 			sender.sendMessage(TextUtil.colorize("&aImport from files completed successfully."));
 		} catch (InterruptedException e) {
-			sender.sendMessage(TextUtil.colorize("&The import process has been interrupted.\n" + e.getMessage()));
+			Thread.currentThread().interrupt();
+			sender.sendMessage(TextUtil.colorize("&cThe import process has been interrupted.\n" + e.getMessage()));
 		}
 	}
 

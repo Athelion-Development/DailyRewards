@@ -123,8 +123,19 @@ public final class UserHandler implements Listener {
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
-        User user = UserHandler.removeUser(event.getPlayer().getUniqueId());
+        final UUID uuid = event.getPlayer().getUniqueId();
+
+        // Data may still be loading, in which case there is no User yet but there
+        // can be queued tasks waiting for one.
+        pendingTasks.remove(uuid);
+
+        final User user = UserHandler.removeUser(uuid);
+        if (user == null) {
+            return;
+        }
+
         joinNotificationTask.getPlayerRewardCheckTimes().remove(user);
+        autoClaimTask.getPlayerRewardCheckTimes().remove(user);
     }
 
     public JoinNotificationTask getJoinNotificationTask() {

@@ -203,6 +203,7 @@ public class MySQLManager {
 			}
 
 		} catch (SQLException exception) {
+			DailyRewardsPlugin.get().getLogger().warning("Failed to load rewards for " + uuid + "!\n" + exception.getLocalizedMessage());
 			return Collections.emptyMap();
 		}
 

@@ -7,7 +7,9 @@ import org.bukkit.Bukkit;
 public class VersionUtil {
     private static boolean oldVersion;
     private static boolean legacyVersion;
-    public static boolean latestVersion;
+    // Assume we are up to date until the update check says otherwise, so nothing
+    // is announced while the lookup is still running.
+    public static boolean latestVersion = true;
 
     static {
         final String serverVersion = Bukkit.getBukkitVersion();

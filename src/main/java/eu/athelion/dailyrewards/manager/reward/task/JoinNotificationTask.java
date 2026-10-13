@@ -1,5 +1,6 @@
 package eu.athelion.dailyrewards.manager.reward.task;
 
+import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.configuration.file.Config;
 import eu.athelion.dailyrewards.configuration.file.Lang;
 import eu.athelion.dailyrewards.manager.Setting;
@@ -62,28 +63,37 @@ public class JoinNotificationTask implements Task {
 
                     long checkTime = playerRewardCheckTimes.get(user);
                     if (currentTime >= checkTime) {
-                        Player player = user.getPlayer();
-
-                        PlayerUtil.playSound(player, Config.JOIN_NOTIFICATION_SOUND.asString());
-                        for (String line : Lang.JOIN_NOTIFICATION.asReplacedList(new HashMap<String, String>() {{
-                            put("%player%", player.getName());
-                            put("%rewards%", String.valueOf(user.getAvailableRewards().size()));
-                        }})) {
-                            BaseComponent[] msg = TextComponent.fromLegacyText(line);
-
-                            for (BaseComponent bc : msg) {
-                                if (!VersionUtil.isLegacyVersion()) bc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Lang.JOIN_HOVER_MESSAGE.asColoredString(player))));
-                                bc.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, Config.JOIN_NOTIFICATION_COMMAND.asString().replace("%player%", player.getName())));
-                            }
-
-                            player.spigot().sendMessage(msg);
-                        }
-
                         playerRewardCheckTimes.remove(user);
+                        // Only the scan runs async, everything touching the player
+                        // has to go back to the thread owning them.
+                        DailyRewardsPlugin.get().runAtEntity(user.getPlayer(), () -> sendNotification(user));
                     }
                 }
             }
         };
+    }
+
+    private void sendNotification(final User user) {
+        final Player player = user.getPlayer();
+        if (!player.isOnline()) {
+            return;
+        }
+
+        PlayerUtil.playSound(player, Config.JOIN_NOTIFICATION_SOUND.asString());
+
+        for (String line : Lang.JOIN_NOTIFICATION.asReplacedList(new HashMap<String, String>() {{
+            put("%player%", player.getName());
+            put("%rewards%", String.valueOf(user.getAvailableRewards().size()));
+        }})) {
+            BaseComponent[] msg = TextComponent.fromLegacyText(line);
+
+            for (BaseComponent bc : msg) {
+                if (!VersionUtil.isLegacyVersion()) bc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Lang.JOIN_HOVER_MESSAGE.asColoredString(player))));
+                bc.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, Config.JOIN_NOTIFICATION_COMMAND.asString().replace("%player%", player.getName())));
+            }
+
+            player.spigot().sendMessage(msg);
+        }
     }
 
     public Map<User, Long> getPlayerRewardCheckTimes() {

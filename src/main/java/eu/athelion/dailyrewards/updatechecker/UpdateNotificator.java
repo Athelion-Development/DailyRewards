@@ -11,7 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class UpdateNotificator implements Listener {
 
@@ -40,15 +39,12 @@ public class UpdateNotificator implements Listener {
 		donate.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/kcxYUQTy6A"));
 
 
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				player.sendMessage(" ");
-				player.sendMessage(TextUtil.colorize("&7There is a new version of &aDailyRewards&7 available."));
-				player.spigot().sendMessage(download, new TextComponent(TextUtil.colorize(" &8| ")), upgrade, new TextComponent(TextUtil.colorize(" &8| ")), changelog, new TextComponent(TextUtil.colorize(" &8| ")), donate);
-				player.sendMessage(TextUtil.colorize("&8Latest version: &a" + DailyRewardsPlugin.getLatestVersion() + " &8| Your version: &c" + DailyRewardsPlugin.get().getDescription().getVersion()));
-				player.sendMessage(" ");
-			}
-		}.runTaskLater(DailyRewardsPlugin.get(), 35);
+		DailyRewardsPlugin.get().runAtEntityLater(player, () -> {
+			player.sendMessage(" ");
+			player.sendMessage(TextUtil.colorize("&7There is a new version of &aDailyRewards&7 available."));
+			player.spigot().sendMessage(download, new TextComponent(TextUtil.colorize(" &8| ")), upgrade, new TextComponent(TextUtil.colorize(" &8| ")), changelog, new TextComponent(TextUtil.colorize(" &8| ")), donate);
+			player.sendMessage(TextUtil.colorize("&8Latest version: &a" + DailyRewardsPlugin.getLatestVersion() + " &8| Your version: &c" + DailyRewardsPlugin.get().getDescription().getVersion()));
+			player.sendMessage(" ");
+		}, 35);
 	}
 }
