@@ -7,6 +7,7 @@ import eu.athelion.dailyrewards.data.DataManager;
 import eu.athelion.dailyrewards.data.PlayerData;
 import eu.athelion.dailyrewards.configuration.file.Config;
 import eu.athelion.dailyrewards.hook.HookManager;
+import eu.athelion.dailyrewards.hook.startup.ItemsAdderStartup;
 import eu.athelion.dailyrewards.manager.MenuManager;
 import eu.athelion.dailyrewards.manager.backend.MySQLManager;
 import eu.athelion.dailyrewards.manager.reward.RewardManager;
@@ -47,6 +48,8 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     private static MenuManager menuManager;
     private static UserHandler userHandler;
     private PluginManager pluginManager;
+    private ItemsAdderStartup itemsAdderStartup;
+    private boolean initialized;
 
     public static DailyRewardsPlugin get() {
         return DailyRewardsPlugin.plugin;
@@ -62,6 +65,15 @@ public final class DailyRewardsPlugin extends JavaPlugin {
         setConsole(get().getServer().getConsoleSender());
         setPluginManager(getServer().getPluginManager());
 
+        if (pluginManager.isPluginEnabled("ItemsAdder")) {
+            itemsAdderStartup = new ItemsAdderStartup(this, this::initializeRewards);
+            itemsAdderStartup.start();
+        } else {
+            initializeRewards();
+        }
+    }
+
+    private void initializeRewards() {
         HookManager.hook();
 
         File langFolder = new File(getDataFolder(), "lang");
@@ -113,8 +125,12 @@ public final class DailyRewardsPlugin extends JavaPlugin {
         setRewardManager(new RewardManager());
         setMenuManager(new MenuManager());
         setUserHandler(new UserHandler());
+        // Players may have joined while the optional item registry was loading.
+        getServer().getOnlinePlayers().forEach(player -> runAtEntity(player,
+                () -> { if (isEnabled() && player.isOnline()) userHandler.loadPlayer(player); }));
 
         registerCommands();
+        initialized = true;
 
         ConsoleCommandSender console = getConsole();
 
@@ -129,14 +145,11 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     }
 
     @Override
-    public void onLoad() {
-        getServer().getOnlinePlayers().forEach(player -> UserHandler.addUser(new User(player, DataManager.getPlayerData(player))));
-    }
-
-    @Override
     public void onDisable() {
+        initialized = false;
+        if (itemsAdderStartup != null) itemsAdderStartup.close();
         PlayerData.removeConfigs();
-        executorService.shutdown();
+        if (executorService != null) executorService.shutdown();
     }
 
     private void copyResource(String resourcePath) {
@@ -284,9 +297,16 @@ public final class DailyRewardsPlugin extends JavaPlugin {
     }
 
     public void reloadPlugin() {
+        if (!initialized || !isEnabled()) return;
+        if (HookManager.getItemsAdderHook().isOn() && !HookManager.getItemsAdderHook().isReady()) {
+            getLogger().warning("ItemsAdder is still loading; keeping current rewards until its load event.");
+            return;
+        }
         Config.reload();
 
         DailyRewardsPlugin.getRewardManager().loadRewards();
         DailyRewardsPlugin.getMenuManager().loadBackgroundFiller();
     }
+
+    public boolean isInitialized() { return initialized; }
 }

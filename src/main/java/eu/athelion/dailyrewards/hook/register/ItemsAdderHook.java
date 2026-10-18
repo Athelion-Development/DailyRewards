@@ -1,6 +1,7 @@
 package eu.athelion.dailyrewards.hook.register;
 
 import dev.lone.itemsadder.api.Events.ItemsAdderLoadDataEvent;
+import dev.lone.itemsadder.api.ItemsAdder;
 import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.hook.Hook;
 import eu.athelion.dailyrewards.util.VersionUtil;
@@ -28,6 +29,8 @@ public class ItemsAdderHook implements Hook<Void>, Listener {
         return isHooked;
     }
 
+    public boolean isReady() { return isHooked && ItemsAdder.areItemsLoaded(); }
+
     @Override
     public @Nullable Void getApi() {
         return null;
@@ -35,6 +38,11 @@ public class ItemsAdderHook implements Hook<Void>, Listener {
 
     @EventHandler
     public void onItemsAdderLoad(final ItemsAdderLoadDataEvent event){
-        DailyRewardsPlugin.get().reloadPlugin();
+        DailyRewardsPlugin plugin = DailyRewardsPlugin.get();
+        plugin.runSync(() -> {
+            if (plugin.isEnabled() && plugin.isInitialized() && ItemsAdder.areItemsLoaded()) {
+                plugin.reloadPlugin();
+            }
+        });
     }
 }

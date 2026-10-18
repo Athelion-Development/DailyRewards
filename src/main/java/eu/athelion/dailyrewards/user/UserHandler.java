@@ -4,6 +4,7 @@ import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.api.event.ReminderReceiveEvent;
 import eu.athelion.dailyrewards.data.DataManager;
 import eu.athelion.dailyrewards.hook.HookManager;
+import eu.athelion.dailyrewards.hook.startup.PlayerLoadSessions;
 import eu.athelion.dailyrewards.manager.reward.RewardType;
 import eu.athelion.dailyrewards.manager.reward.task.JoinNotificationTask;
 import eu.athelion.dailyrewards.manager.reward.task.AutoClaimTask;
@@ -23,6 +24,7 @@ import java.util.function.Consumer;
 public final class UserHandler implements Listener {
     private static final Map<UUID, User> usersHashMap = new ConcurrentHashMap<>();
     private static final Map<UUID, List<Consumer<User>>> pendingTasks = new ConcurrentHashMap<>();
+    private final PlayerLoadSessions<Player> loadingPlayers = new PlayerLoadSessions<>();
 
     private final JoinNotificationTask joinNotificationTask;
     private final AutoClaimTask autoClaimTask;
@@ -93,9 +95,17 @@ public final class UserHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     private void onJoin(PlayerJoinEvent event) {
-        final Player player = event.getPlayer();
+        loadPlayer(event.getPlayer());
+    }
 
-        DataManager.loadPlayerDataAsync(player, data -> {
+    public void loadPlayer(final Player player) {
+        UUID uuid = player.getUniqueId();
+        if (!player.isOnline() || usersHashMap.containsKey(uuid)
+                || !loadingPlayers.begin(uuid, player)) return;
+        DataManager.loadPlayerDataAsync(player, data -> DailyRewardsPlugin.get().runAtEntity(player, () -> {
+            try {
+            if (!DailyRewardsPlugin.get().isEnabled() || !player.isOnline()
+                    || !loadingPlayers.owns(uuid, player)) return;
             User user = UserHandler.addUser(
                     new User(
                             player,
@@ -106,7 +116,7 @@ public final class UserHandler implements Listener {
             final Set<RewardType> availableRewards = user.getAvailableRewards();
 
             ReminderReceiveEvent reminderReceiveEvent = new ReminderReceiveEvent(player, availableRewards);
-            DailyRewardsPlugin.get().runSync(() -> Bukkit.getPluginManager().callEvent(reminderReceiveEvent));
+            Bukkit.getPluginManager().callEvent(reminderReceiveEvent);
 
             if (reminderReceiveEvent.isCancelled()) {
                 return;
@@ -118,12 +128,16 @@ public final class UserHandler implements Listener {
 
             joinNotificationTask.addUser(user);
             autoClaimTask.addUser(user);
-        });
+            } finally {
+                loadingPlayers.end(uuid, player);
+            }
+        }));
     }
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        loadingPlayers.end(uuid, event.getPlayer());
 
         // Data may still be loading, in which case there is no User yet but there
         // can be queued tasks waiting for one.
