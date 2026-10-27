@@ -2,8 +2,6 @@ package eu.athelion.dailyrewards.configuration.file;
 
 import com.cryptomorin.xseries.XMaterial;
 import dev.dbassett.skullcreator.SkullCreator;
-import dev.lone.itemsadder.api.CustomStack;
-import dev.lone.itemsadder.api.ItemsAdder;
 import eu.athelion.dailyrewards.DailyRewardsPlugin;
 import eu.athelion.dailyrewards.configuration.YamlFile;
 import eu.athelion.dailyrewards.hook.HookManager;
@@ -147,8 +145,8 @@ public enum Config {
                 meta.setCustomModelData(data);
                 itemStack.setItemMeta(meta);
                 items.put(valueItemName, itemStack);
-            } else if (HookManager.getItemsAdderHook().isOn() && ItemsAdder.isCustomItem(itemName)) {
-                items.put(valueItemName, CustomStack.getInstance(itemName).getItemStack());
+            } else if (HookManager.getItemsAdderHook().isOn() && HookManager.getItemsAdderHook().hasItem(itemName)) {
+                items.put(valueItemName, Objects.requireNonNull(HookManager.getItemsAdderHook().getItem(itemName)));
             } else if (HookManager.getOraxenHook().isOn() && OraxenItems.exists(itemName)) {
                 items.put(valueItemName, OraxenItems.getItemById(itemName).build());
             } else {
